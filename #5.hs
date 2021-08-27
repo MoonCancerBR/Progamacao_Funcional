@@ -23,7 +23,7 @@ upper xs = [toUpper x|x <-xs]
 
 
 --selec - apenas as chaves selecionadas
-
+selec u p = [u !! y | y<-p]
 
 --isPalind
 isPalind xs
