@@ -18,6 +18,7 @@ data Info = Info { car :: Car
                  } deriving (Eq, Show, Read)
 
 
+toString :: Info -> [Char]
 toString (Info (Car pass maxPass gas maxGas km) (Op name result)) =
                 "Car pass: " ++ show pass ++ "/" ++ show maxPass
                  ++ " gas: " ++ show gas  ++ "/" ++ show maxGas
@@ -29,52 +30,58 @@ resume info = trace (toString info) info
 
 -- cria um carro passando maxPass e maxGas - retorna sempre true.
 
+createCar :: Int -> Int -> Info
 createCar x y = Info (Car {pass = 0, maxPass = x, gas = 0, maxGas = y, km = 0}) (Op "create" True)
 
 -- enche o tanque passando a qtd de gas. Retorna falso apenas se o tanque já estiver completamente cheio.
 
+fuel :: Int -> Info -> Info
 fuel x (Info (Car pass maxPass gas maxGas km) op) =
     if gas < maxGas
-        then Info (Car pass maxPass addFuel maxGas km) (Op "fuel" True)
-        else Info (Car pass maxPass gas maxGas km) (Op "fuel" False )
-        where
-            verify = gas + x
-            addFuel = if verify > maxGas
-                    then maxGas
-                    else verify
+    then Info (Car pass maxPass addFuel maxGas km) (Op "fuel" True)
+    else Info (Car pass maxPass gas maxGas km) (Op "fuel" False )
+    where
+    verify = gas + x
+    addFuel = if verify > maxGas
+    then maxGas
+    else verify
 
 -- Faz entrar uma pessoa no carro. Retorna false se já estiver lotado.
 
+embark :: Info -> Info
 embark (Info (Car pass maxPass gas maxGas km) op) =
     if pass < maxPass
-        then Info (Car (pass + 1) maxPass gas maxGas km) (Op "embark" True)
-        else Info (Car pass maxPass gas maxGas km) (Op "embark" False )
+    then Info (Car (pass + 1) maxPass gas maxGas km) (Op "embark" True)
+    else Info (Car pass maxPass gas maxGas km) (Op "embark" False )
 
 -- Retira uma pessoa do carro, retorna false se não tiver ninguém no carro
 
+disembark :: Info -> Info
 disembark (Info (Car pass maxPass gas maxGas km) op) =
     if pass > 0
-        then Info (Car (pass - 1) maxPass gas maxGas km) (Op "disembark" True)
-        else Info (Car pass maxPass gas maxGas km) (Op "disembark" False )
+    then Info (Car (pass - 1) maxPass gas maxGas km) (Op "disembark" True)
+    else Info (Car pass maxPass gas maxGas km) (Op "disembark" False )
 
 -- dirige diminuindo a gasolina e aumentando km. 
 -- Só é possível dirigir se houver alguém no carro e houver alguma gasolina.
 -- Aumenta a km da gasolina gasta.
 -- retorna false se não há ninguém no carro ou se não tinha gasolina para completar a viagem.
 
+drive :: Int -> Info -> Info
 drive x (Info (Car pass maxPass gas maxGas km) op) =
     if pass > 0 && gas > 0
-        then Info (Car pass maxPass currentGas maxGas currentGas) (Op "drive" toCheck)
-        else Info (Car pass maxPass gas maxGas km) (Op "drive" False)
-        where
-            currentGas = if x < gas
-                        then gas - x
-                        else 0
-            currentKm = km + gas - currentGas
-            toCheck = gas >= x
+    then Info (Car pass maxPass currentGas maxGas currentGas) (Op "drive" toCheck)
+    else Info (Car pass maxPass gas maxGas km) (Op "drive" False)
+    where
+    currentGas = if x < gas
+    then gas - x
+    else 0
+    currentKm = km + gas - currentGas
+    toCheck = gas >= x
 
 -- main = print $ resume . embark . resume. embark . resume $ createCar 2 50
 
+main :: IO ()
 main = do
     let res = createCar 2 50
             & resume & embark
